@@ -2,150 +2,232 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Verification</title>
+    <meta
+        name="description"
+        content="Secure identity verification"
+    >
+
+    <title>Verify Identity</title>
 
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-    <nav class="navbar">
-        <div class="nav-inner">
-            <div class="brand">
-                <div class="brand-mark">●</div>
+    <header class="topbar">
+        <div class="topbar-inner">
+
+            <a class="brand" href="/" aria-label="Verification home">
+                <span class="brand-symbol" aria-hidden="true"></span>
                 <span>Verification</span>
-            </div>
+            </a>
 
-            <div class="nav-status">
-                Secure Access
-            </div>
+            <span class="secure-status">
+                Secure access
+            </span>
+
         </div>
-    </nav>
+    </header>
 
 
-    <main class="page">
+    <main>
 
         <section class="hero">
-            <p class="eyebrow">SECURE ACCESS</p>
 
-            <h1>
+            <p class="eyebrow">
+                SECURE ACCESS
+            </p>
+
+            <h1 class="display-title">
                 Verify your<br>
                 identity.
             </h1>
 
-            <p class="subtitle">
-                Enter your phone number to receive a verification code.
+            <p class="hero-description">
+                A verification code will be sent to your phone.
             </p>
+
         </section>
 
 
-        <section class="verification-card">
+        <section class="verification-area">
 
-            <!-- PHONE STEP -->
-            <div id="phoneStep">
+            <div
+                class="verification-card"
+                id="verificationCard"
+            >
 
-                <div class="card-header">
-                    <div class="step-number">1</div>
+                <!-- PHONE STEP -->
 
-                    <div>
-                        <h2>Phone number</h2>
-                        <p>We'll send a verification code to your phone.</p>
-                    </div>
-                </div>
-
-                <label for="phone">
-                    Phone number
-                </label>
-
-                <input
-                    id="phone"
-                    type="tel"
-                    inputmode="tel"
-                    autocomplete="tel"
-                    placeholder="+1 (555) 123-4567"
+                <div
+                    class="step"
+                    id="phoneStep"
                 >
 
-                <button id="sendCode" class="primary-button">
-                    Continue
-                    <span>→</span>
-                </button>
+                    <div class="step-heading">
 
-            </div>
+                        <div class="step-icon">
+                            1
+                        </div>
+
+                        <div>
+                            <h2>Phone number</h2>
+
+                            <p>
+                                Enter the number associated with your account.
+                            </p>
+                        </div>
+
+                    </div>
 
 
-            <!-- CODE STEP -->
-            <div id="codeStep" hidden>
+                    <div class="field">
 
-                <div class="card-header">
-                    <div class="step-number">2</div>
+                        <label for="phone">
+                            Phone number
+                        </label>
 
-                    <div>
-                        <h2>Enter your code</h2>
+                        <input
+                            id="phone"
+                            type="tel"
+                            inputmode="tel"
+                            autocomplete="tel"
+                            placeholder="+1 (555) 123-4567"
+                            aria-describedby="phoneHint"
+                        >
 
-                        <p>
-                            We sent a verification code to
-                            <strong id="phoneDisplay"></strong>
+                        <p
+                            class="field-hint"
+                            id="phoneHint"
+                        >
+                            Your number is only used for verification.
                         </p>
+
                     </div>
+
+
+                    <button
+                        class="primary-button"
+                        id="sendCode"
+                        type="button"
+                    >
+                        <span>Continue</span>
+                        <span
+                            class="button-arrow"
+                            aria-hidden="true"
+                        >→</span>
+                    </button>
+
                 </div>
 
-                <label for="code">
-                    Verification code
-                </label>
 
-                <input
-                    id="code"
-                    type="text"
-                    inputmode="numeric"
-                    autocomplete="one-time-code"
-                    maxlength="6"
-                    placeholder="000000"
+                <!-- CODE STEP -->
+
+                <div
+                    class="step"
+                    id="codeStep"
+                    hidden
                 >
 
-                <button id="verifyCode" class="primary-button">
-                    Verify
-                    <span>→</span>
-                </button>
+                    <div class="step-heading">
 
-                <button id="backButton" class="secondary-button">
-                    Use a different number
-                </button>
+                        <div class="step-icon">
+                            2
+                        </div>
+
+                        <div>
+                            <h2>Verification code</h2>
+
+                            <p>
+                                Enter the code sent to
+                                <strong id="phoneDisplay"></strong>.
+                            </p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label for="code">
+                            Six-digit code
+                        </label>
+
+                        <input
+                            id="code"
+                            type="text"
+                            inputmode="numeric"
+                            autocomplete="one-time-code"
+                            maxlength="6"
+                            placeholder="000000"
+                            aria-describedby="codeHint"
+                        >
+
+                        <p
+                            class="field-hint"
+                            id="codeHint"
+                        >
+                            The code expires shortly after it is sent.
+                        </p>
+
+                    </div>
+
+
+                    <button
+                        class="primary-button"
+                        id="verifyCode"
+                        type="button"
+                    >
+                        <span>Verify</span>
+                        <span
+                            class="button-arrow"
+                            aria-hidden="true"
+                        >→</span>
+                    </button>
+
+
+                    <button
+                        class="secondary-button"
+                        id="backButton"
+                        type="button"
+                    >
+                        Use a different number
+                    </button>
+
+                </div>
+
+
+                <div
+                    class="status"
+                    id="message"
+                    role="status"
+                    aria-live="polite"
+                ></div>
 
             </div>
 
 
-            <div id="message" class="message"></div>
+            <div class="security-note">
 
-        </section>
-
-
-        <section class="security-info">
-
-            <div class="info-card">
-                <div class="info-icon">✓</div>
+                <div
+                    class="security-icon"
+                    aria-hidden="true"
+                >
+                    ✓
+                </div>
 
                 <div>
-                    <h3>Secure verification</h3>
+                    <strong>Private and secure</strong>
+
                     <p>
-                        Your verification request is securely
-                        transmitted to the verification server.
+                        Verification codes are handled by the
+                        verification service and are never displayed
+                        in this browser.
                     </p>
                 </div>
-            </div>
 
-
-            <div class="info-card">
-                <div class="info-icon">⌁</div>
-
-                <div>
-                    <h3>One-time code</h3>
-                    <p>
-                        Verification codes are temporary and
-                        can only be used once.
-                    </p>
-                </div>
             </div>
 
         </section>
@@ -153,14 +235,16 @@
     </main>
 
 
-    <footer>
-        <p>
-            Internal Verification System
-        </p>
+    <footer class="footer">
 
-        <p>
+        <span>
+            Internal Verification System
+        </span>
+
+        <span>
             © 2026
-        </p>
+        </span>
+
     </footer>
 
 
