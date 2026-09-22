@@ -1,56 +1,84 @@
-// ============================================================
-// CONFIGURATION
-// ============================================================
+"use strict";
 
-// Change this to your backend URL.
-//
-// During local testing:
-// http://localhost:5000
-//
-// When using a tunnel:
-// https://your-api-domain.example
-//
-const API_BASE_URL = "http://localhost:5000";
+/*
+ * ============================================================
+ * CONFIGURATION
+ * ============================================================
+ *
+ * Development:
+ *     http://localhost:5000
+ *
+ * Production:
+ *     https://api.yourdomain.com
+ *
+ * Do NOT put SMS-provider secrets in this file.
+ */
 
+const API_BASE_URL = "https://api.yourdomain.com";
 
-// Where the user goes after successful verification.
-//
-// Change this to the URL of your internal site.
-const INTERNAL_SITE_URL = "../internal/index.html";
-
-
-// ============================================================
-// ELEMENTS
-// ============================================================
-
-const phoneStep = document.getElementById("phoneStep");
-const codeStep = document.getElementById("codeStep");
-
-const phoneInput = document.getElementById("phone");
-const codeInput = document.getElementById("code");
-
-const phoneDisplay = document.getElementById("phoneDisplay");
-
-const sendButton = document.getElementById("sendCode");
-const verifyButton = document.getElementById("verifyCode");
-const backButton = document.getElementById("backButton");
-
-const message = document.getElementById("message");
+const INTERNAL_SITE_URL =
+    "https://internal.yourdomain.com/";
 
 
-// Keep the phone number in memory while verification is happening.
+/*
+ * ============================================================
+ * DOM
+ * ============================================================
+ */
+
+const verificationCard =
+    document.getElementById("verificationCard");
+
+const phoneStep =
+    document.getElementById("phoneStep");
+
+const codeStep =
+    document.getElementById("codeStep");
+
+const phoneInput =
+    document.getElementById("phone");
+
+const codeInput =
+    document.getElementById("code");
+
+const phoneDisplay =
+    document.getElementById("phoneDisplay");
+
+const sendButton =
+    document.getElementById("sendCode");
+
+const verifyButton =
+    document.getElementById("verifyCode");
+
+const backButton =
+    document.getElementById("backButton");
+
+const message =
+    document.getElementById("message");
+
+
+/*
+ * ============================================================
+ * STATE
+ * ============================================================
+ */
+
 let currentPhone = "";
 
+let requestInProgress = false;
 
-// ============================================================
-// MESSAGE HANDLING
-// ============================================================
+
+/*
+ * ============================================================
+ * STATUS
+ * ============================================================
+ */
 
 function setMessage(text, type = "") {
 
     message.textContent = text;
 
-    message.className = "message";
+    message.className = "status";
 
     if (type) {
         message.classList.add(type);
@@ -58,65 +86,137 @@ function setMessage(text, type = "") {
 }
 
 
-// ============================================================
-// PHONE FORMATTING
-// ============================================================
+/*
+ * ============================================================
+ * PHONE
+ * ============================================================
+ */
 
-function cleanPhoneNumber(phone) {
+function normalizePhone(phone) {
 
-    return phone.replace(/[^\d+]/g, "");
+    return phone
+        .trim()
+        .replace(/[^\d+]/g, "");
 }
 
 
 function maskPhone(phone) {
 
-    const digits = phone.replace(/\D/g, "");
+    const digits =
+        phone.replace(/\D/g, "");
 
     if (digits.length < 4) {
         return phone;
     }
 
-    return "••• ••• " + digits.slice(-4);
+    return `••• ••• ${digits.slice(-4)}`;
 }
 
 
-// ============================================================
-// SEND VERIFICATION CODE
-// ============================================================
+/*
+ * ============================================================
+ * STEP TRANSITION
+ * ============================================================
+ *
+ * The transition starts from the currently displayed state.
+ * We don't use a delayed "wait for animation to finish"
+ * before accepting the next action.
+ */
 
-sendButton.addEventListener("click", async () => {
+function showCodeStep() {
 
-    const phone = cleanPhoneNumber(phoneInput.value.trim());
+    phoneStep.hidden = true;
+
+    codeStep.hidden = false;
+
+    codeStep.classList.remove("step-enter");
+
+    /*
+     * Force a new animation frame so repeated transitions
+     * reliably begin from the current presentation state.
+     */
+    requestAnimationFrame(() => {
+
+        codeStep.classList.add("step-enter");
+
+    });
+
+    codeInput.focus();
+}
+
+
+function showPhoneStep() {
+
+    codeStep.hidden = true;
+
+    phoneStep.hidden = false;
+
+    phoneStep.classList.remove("step-enter");
+
+    requestAnimationFrame(() => {
+
+        phoneStep.classList.add("step-enter");
+
+    });
+
+    phoneInput.focus();
+}
+
+
+/*
+ * ============================================================
+ * SEND CODE
+ * ============================================================
+ */
+
+async function sendVerificationCode() {
+
+    if (requestInProgress) {
+        return;
+    }
+
+    const phone =
+        normalizePhone(phoneInput.value);
+
 
     if (!phone) {
 
         setMessage(
-            "Enter your phone number first.",
+            "Enter your phone number.",
             "error"
         );
+
+        phoneInput.focus();
 
         return;
     }
 
 
-    const digits = phone.replace(/\D/g, "");
+    const digitCount =
+        phone.replace(/\D/g, "").length;
 
-    if (digits.length < 10) {
+
+    if (digitCount < 10) {
 
         setMessage(
             "Enter a valid phone number.",
             "error"
         );
 
+        phoneInput.focus();
+
         return;
     }
 
+
+    requestInProgress = true;
 
     currentPhone = phone;
 
     sendButton.disabled = true;
 
-    sendButton.textContent = "Sending…";
+    sendButton.innerHTML =
+        "<span>Sending…</span>";
 
     setMessage("");
 
@@ -132,30 +232,35 @@ sendButton.addEventListener("click", async () => {
                     "Content-Type": "application/json"
                 },
 
+                credentials: "include",
+
                 body: JSON.stringify({
-                    phone: phone
+                    phone
                 })
             }
         );
 
 
-        const data = await response.json();
+        let data = {};
+
+        try {
+            data = await response.json();
+        } catch {
+            data = {};
+        }
 
 
         if (!response.ok) {
 
             throw new Error(
-                data.error || "Unable to send verification code."
+                data.error ||
+                "We couldn't send the verification code."
             );
         }
 
 
-        phoneDisplay.textContent = maskPhone(phone);
-
-
-        phoneStep.hidden = true;
-
-        codeStep.hidden = false;
+        phoneDisplay.textContent =
+            maskPhone(phone);
 
 
         setMessage(
@@ -164,13 +269,9 @@ sendButton.addEventListener("click", async () => {
         );
 
 
-        codeInput.value = "";
+        showCodeStep();
 
-        codeInput.focus();
-
-    }
-
-    catch (error) {
+    } catch (error) {
 
         console.error(error);
 
@@ -180,53 +281,77 @@ sendButton.addEventListener("click", async () => {
             "error"
         );
 
-    }
+    } finally {
 
-    finally {
+        requestInProgress = false;
 
         sendButton.disabled = false;
 
-        sendButton.innerHTML =
-            'Continue <span>→</span>';
+        sendButton.innerHTML = `
+            <span>Continue</span>
+            <span
+                class="button-arrow"
+                aria-hidden="true"
+            >→</span>
+        `;
     }
+}
 
-});
 
+/*
+ * ============================================================
+ * VERIFY CODE
+ * ============================================================
+ */
 
-// ============================================================
-// VERIFY CODE
-// ============================================================
+async function verifyVerificationCode() {
 
-verifyButton.addEventListener("click", async () => {
-
-    const code = codeInput.value.trim();
+    if (requestInProgress) {
+        return;
+    }
 
 
     if (!currentPhone) {
 
         setMessage(
-            "No verification request exists.",
+            "Start a new verification request.",
             "error"
         );
 
+        showPhoneStep();
+
         return;
     }
+
+
+    const code =
+        codeInput.value
+            .replace(/\D/g, "")
+            .slice(0, 6);
+
+
+    codeInput.value = code;
 
 
     if (!/^\d{6}$/.test(code)) {
 
         setMessage(
-            "Enter the 6-digit verification code.",
+            "Enter the six-digit verification code.",
             "error"
         );
+
+        codeInput.focus();
 
         return;
     }
 
 
+    requestInProgress = true;
+
     verifyButton.disabled = true;
 
-    verifyButton.textContent = "Verifying…";
+    verifyButton.innerHTML =
+        "<span>Verifying…</span>";
 
     setMessage("");
 
@@ -246,23 +371,38 @@ verifyButton.addEventListener("click", async () => {
 
                 body: JSON.stringify({
                     phone: currentPhone,
-                    code: code
+                    code
                 })
             }
         );
 
 
-        const data = await response.json();
+        let data = {};
+
+        try {
+            data = await response.json();
+        } catch {
+            data = {};
+        }
 
 
-        if (!response.ok || !data.verified) {
+        if (
+            !response.ok ||
+            data.verified !== true
+        ) {
 
             throw new Error(
                 data.error ||
-                "Incorrect verification code."
+                "That verification code is incorrect."
             );
         }
 
+
+        /*
+         * The backend should establish the authenticated
+         * session here. The browser does not create its own
+         * authentication state.
+         */
 
         setMessage(
             "Identity verified.",
@@ -270,94 +410,193 @@ verifyButton.addEventListener("click", async () => {
         );
 
 
-        verifyButton.textContent = "Verified ✓";
+        verifyButton.innerHTML =
+            "<span>Verified</span>";
 
 
-        // Give the success message a moment
-        // before redirecting.
-        setTimeout(() => {
+        /*
+         * A short pause lets the completion state actually
+         * register visually. This isn't part of verification
+         * itself—the server has already completed it.
+         */
 
-            window.location.href =
-                INTERNAL_SITE_URL;
+        window.setTimeout(() => {
 
-        }, 900);
+            window.location.assign(
+                INTERNAL_SITE_URL
+            );
 
-    }
+        }, 350);
 
-    catch (error) {
+    } catch (error) {
 
         console.error(error);
 
         setMessage(
             error.message ||
-            "Verification failed.",
+            "Verification failed. Please try again.",
             "error"
         );
 
         verifyButton.disabled = false;
 
-        verifyButton.textContent =
-            "Verify";
+        verifyButton.innerHTML = `
+            <span>Verify</span>
+            <span
+                class="button-arrow"
+                aria-hidden="true"
+            >→</span>
+        `;
 
+    } finally {
+
+        requestInProgress = false;
     }
+}
 
-});
 
+/*
+ * ============================================================
+ * BACK
+ * ============================================================
+ */
 
-// ============================================================
-// GO BACK
-// ============================================================
-
-backButton.addEventListener("click", () => {
+function useDifferentNumber() {
 
     currentPhone = "";
 
     codeInput.value = "";
 
-    phoneStep.hidden = false;
-
-    codeStep.hidden = true;
-
     setMessage("");
 
-    phoneInput.focus();
+    showPhoneStep();
 
-});
+}
 
 
-// ============================================================
-// ENTER KEY SUPPORT
-// ============================================================
+/*
+ * ============================================================
+ * EVENTS
+ * ============================================================
+ */
 
-phoneInput.addEventListener("keydown", (event) => {
+sendButton.addEventListener(
+    "click",
+    sendVerificationCode
+);
 
-    if (event.key === "Enter") {
+verifyButton.addEventListener(
+    "click",
+    verifyVerificationCode
+);
 
-        sendButton.click();
+backButton.addEventListener(
+    "click",
+    useDifferentNumber
+);
 
+
+/*
+ * Enter submits the current step.
+ */
+
+phoneInput.addEventListener(
+    "keydown",
+    (event) => {
+
+        if (event.key === "Enter") {
+
+            event.preventDefault();
+
+            sendVerificationCode();
+        }
     }
+);
 
-});
 
+codeInput.addEventListener(
+    "keydown",
+    (event) => {
 
-codeInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
 
-    if (event.key === "Enter") {
+            event.preventDefault();
 
-        verifyButton.click();
-
+            verifyVerificationCode();
+        }
     }
+);
 
-});
+
+/*
+ * OTP input should contain digits only.
+ */
+
+codeInput.addEventListener(
+    "input",
+    () => {
+
+        codeInput.value =
+            codeInput.value
+                .replace(/\D/g, "")
+                .slice(0, 6);
+    }
+);
 
 
-// ============================================================
-// ONLY ALLOW NUMBERS IN OTP FIELD
-// ============================================================
+/*
+ * Immediate pointer feedback.
+ *
+ * :active already handles this in CSS, but Pointer Events
+ * make the interaction explicit and work consistently across
+ * mouse, touch, and pen input.
+ */
 
-codeInput.addEventListener("input", () => {
+for (const button of [
+    sendButton,
+    verifyButton,
+    backButton
+]) {
 
-    codeInput.value =
-        codeInput.value.replace(/\D/g, "").slice(0, 6);
+    button.addEventListener(
+        "pointerdown",
+        () => {
 
-});
+            if (!button.disabled) {
+                button.dataset.pressed = "true";
+            }
+        }
+    );
+
+
+    const release =
+        () => {
+
+            delete button.dataset.pressed;
+        };
+
+
+    button.addEventListener(
+        "pointerup",
+        release
+    );
+
+    button.addEventListener(
+        "pointercancel",
+        release
+    );
+
+    button.addEventListener(
+        "pointerleave",
+        release
+    );
+}
+
+
+/*
+ * ============================================================
+ * INITIAL STATE
+ * ============================================================
+ */
+
+phoneInput.focus();
