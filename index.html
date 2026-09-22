@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Verification</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="nav-inner">
+            <div class="brand">
+                <div class="brand-mark">●</div>
+                <span>Verification</span>
+            </div>
+
+            <div class="nav-status">
+                Secure Access
+            </div>
+        </div>
+    </nav>
+
+
+    <main class="page">
+
+        <section class="hero">
+            <p class="eyebrow">SECURE ACCESS</p>
+
+            <h1>
+                Verify your<br>
+                identity.
+            </h1>
+
+            <p class="subtitle">
+                Enter your phone number to receive a verification code.
+            </p>
+        </section>
+
+
+        <section class="verification-card">
+
+            <!-- PHONE STEP -->
+            <div id="phoneStep">
+
+                <div class="card-header">
+                    <div class="step-number">1</div>
+
+                    <div>
+                        <h2>Phone number</h2>
+                        <p>We'll send a verification code to your phone.</p>
+                    </div>
+                </div>
+
+                <label for="phone">
+                    Phone number
+                </label>
+
+                <input
+                    id="phone"
+                    type="tel"
+                    inputmode="tel"
+                    autocomplete="tel"
+                    placeholder="+1 (555) 123-4567"
+                >
+
+                <button id="sendCode" class="primary-button">
+                    Continue
+                    <span>→</span>
+                </button>
+
+            </div>
+
+
+            <!-- CODE STEP -->
+            <div id="codeStep" hidden>
+
+                <div class="card-header">
+                    <div class="step-number">2</div>
+
+                    <div>
+                        <h2>Enter your code</h2>
+
+                        <p>
+                            We sent a verification code to
+                            <strong id="phoneDisplay"></strong>
+                        </p>
+                    </div>
+                </div>
+
+                <label for="code">
+                    Verification code
+                </label>
+
+                <input
+                    id="code"
+                    type="text"
+                    inputmode="numeric"
+                    autocomplete="one-time-code"
+                    maxlength="6"
+                    placeholder="000000"
+                >
+
+                <button id="verifyCode" class="primary-button">
+                    Verify
+                    <span>→</span>
+                </button>
+
+                <button id="backButton" class="secondary-button">
+                    Use a different number
+                </button>
+
+            </div>
+
+
+            <div id="message" class="message"></div>
+
+        </section>
+
+
+        <section class="security-info">
+
+            <div class="info-card">
+                <div class="info-icon">✓</div>
+
+                <div>
+                    <h3>Secure verification</h3>
+                    <p>
+                        Your verification request is securely
+                        transmitted to the verification server.
+                    </p>
+                </div>
+            </div>
+
+
+            <div class="info-card">
+                <div class="info-icon">⌁</div>
+
+                <div>
+                    <h3>One-time code</h3>
+                    <p>
+                        Verification codes are temporary and
+                        can only be used once.
+                    </p>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <footer>
+        <p>
+            Internal Verification System
+        </p>
+
+        <p>
+            © 2026
+        </p>
+    </footer>
+
+
+    <script src="script.js"></script>
+
+</body>
+</html>
